@@ -13,5 +13,5 @@ function validateGenre(genre) {
   return schema.validate(genre);
 }
 module.exports.Genre = Genre;
-module.exports.genreSchema = Genre;
+module.exports.genreSchema = genreSchema;
 module.exports.validate = validateGenre;

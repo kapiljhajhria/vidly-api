@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+mongoose.set("useFindAndModify", false);
 const Joi = require("joi");
 const genres = require("./routes/genres");
 const express = require("express");

@@ -1,4 +1,5 @@
 const { User, validate } = require("../models/user");
+const bcrypt = require("bcrypt");
 const passwordComplexity = require("joi-password-complexity");
 const _ = require("lodash");
 const mongoose = require("mongoose");
@@ -16,6 +17,8 @@ router.post("/", async (req, res) => {
   if (user) return res.status(400).send("user already registered");
 
   user = new User(_.pick(req.body, ["name", "email", "password"]));
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(user.password, salt);
   await user.save();
   res.send(_.pick(user, ["name", "email"]));
 });

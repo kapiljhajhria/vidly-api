@@ -1,4 +1,5 @@
 const { User, validate } = require("../models/user");
+const passwordComplexity = require("joi-password-complexity");
 const _ = require("lodash");
 const mongoose = require("mongoose");
 const express = require("express");

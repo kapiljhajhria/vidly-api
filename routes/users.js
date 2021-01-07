@@ -14,11 +14,7 @@ router.post("/", async (req, res) => {
 
   if (user) return res.status(400).send("user already registered");
 
-  user = new User({
-    email: req.body.email,
-    name: req.body.name,
-    password: req.body.password,
-  });
+  user = new User(_.pick(req.body, ["name", "email", "password"]));
   await user.save();
   res.send(_.pick(user, ["name", "email"]));
 });

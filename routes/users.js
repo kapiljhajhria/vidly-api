@@ -1,11 +1,26 @@
-const { Genre: User, validate } = require("../models/genre");
+const { User, validate } = require("../models/user");
 const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  const users = await User.find().sort("name");
-  res.send(users);
+router.post("/", async (req, res) => {
+  const { error } = validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  //cehck if user is registered
+
+  let user = await User.findOne({ email: req.body.email });
+
+  if (user) return res.status(400).send("user already registered");
+
+  user = new User({
+    email: req.body.email,
+    name: req.body.name,
+    password: req.body.password,
+  });
+  await user.save();
+
+  res.send(user);
 });
 
 module.exports = router;

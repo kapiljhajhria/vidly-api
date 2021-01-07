@@ -16,6 +16,12 @@ router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
+  // if (mongoose.Types.ObjectId.isValid(req.body.customerId))
+  //   return res.status(400).send("invalid customer");
+
+  // if (mongoose.Types.ObjectId.isValid(req.body.movieId))
+  //   return res.status(400).send("invalid movie");
+
   const customer = await Customer.findById(req.body.customerId);
   if (!customer) return res.status(400).send("Invalid customer.");
 
@@ -37,7 +43,7 @@ router.post("/", async (req, res) => {
       dailyRentalRate: movie.dailyRentalRate,
     },
   });
-  rental = await rental.save();
+  // rental = await rental.save();
 
   // movie.numberInStock--;
   // movie.save();

@@ -23,8 +23,7 @@ router.post("/", async (req, res) => {
   if (!validPassword) return res.status(400).send("invalid email or password");
 
   //send jwt token
-
-  const token = jwt.sign({ _id: user._id }, config.get("jwtPrivateKey")); //payload,signature or private key(use env varibales)
+  const token = user.generateAuthToken();
 
   res.send(token);
 });

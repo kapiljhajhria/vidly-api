@@ -3,6 +3,7 @@ const { Genre } = require("../models/genre");
 const mongoose = require("mongoose");
 const express = require("express");
 const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
@@ -58,7 +59,7 @@ router.put("/:id", auth, async (req, res) => {
   res.send(movie);
 });
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, admin, async (req, res) => {
   const movie = await Movie.findByIdAndRemove(req.params.id);
 
   if (!movie)

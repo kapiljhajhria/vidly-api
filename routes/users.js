@@ -1,10 +1,12 @@
-const { User, validate } = require("../models/user");
+const config = require("config");
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const passwordComplexity = require("joi-password-complexity");
 const _ = require("lodash");
+const passwordComplexity = require("joi-password-complexity");
 const mongoose = require("mongoose");
 const express = require("express");
 const router = express.Router();
+const { User, validate } = require("../models/user");
 
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
@@ -20,7 +22,8 @@ router.post("/", async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
   await user.save();
-  res.send(_.pick(user, ["name", "email"]));
+  const token = jwt.sign({ _id: user._id }, config.get("jwtPrivateKey"));
+  res.header("x-auth-token", token).send(_.pick(user, ["name", "email"]));
 });
 
 module.exports = router;

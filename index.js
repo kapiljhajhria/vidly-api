@@ -18,6 +18,7 @@ const app = express();
 
 process.on("uncaughtException", (exp) => {
   console.log("uncaught exception occured");
+  winston.error(exp.message, exp);
 });
 
 winston.add(new winston.transports.File({ filename: "logfile.log" }));

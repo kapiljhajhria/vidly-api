@@ -1,4 +1,6 @@
 require("express-async-errors");
+const winston = require("winston");
+require("winston-mongodb");
 const config = require("config");
 const mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
@@ -13,6 +15,14 @@ const auth = require("./routes/auth");
 const express = require("express");
 const error = require("./middleware/error");
 const app = express();
+
+winston.add(new winston.transports.File({ filename: "logfile.log" }));
+winston.add(
+  new winston.transports.MongoDB({
+    db: "mongodb://localhost/vidly",
+    level: "error",
+  })
+);
 
 if (!config.get("jwtPrivateKey")) {
   console.error("FATAL jwtPrivateKey is not defined");

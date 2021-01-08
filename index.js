@@ -16,13 +16,16 @@ const express = require("express");
 const error = require("./middleware/error");
 const app = express();
 
+winston.exceptions.handle(
+  new winston.transports.File({ filename: "exceptionsHandler.log" })
+);
+
 process.on("uncaughtException", (exp) => {
   winston.error(exp.message, exp);
   process.exit(1);
 });
-process.on("unhandledRejection", (exp) => {
-  winston.error(exp.message, exp);
-  process.exit(1);
+process.on("unhandledRejection", (ex) => {
+  throw ex;
 });
 
 winston.add(new winston.transports.File({ filename: "logfile.log" }));
@@ -34,8 +37,8 @@ winston.add(
 );
 
 // throw new Error("something failed during startup");
-const p = Promise.reject(new Error("promise failed , not handled"));
-p.then(() => console.log("p done"));
+// const p = Promise.reject(new Error("promise failed , not handled"));
+// p.then(() => console.log("p done"));
 
 if (!config.get("jwtPrivateKey")) {
   console.error("FATAL jwtPrivateKey is not defined");

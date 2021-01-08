@@ -20,6 +20,10 @@ process.on("uncaughtException", (exp) => {
   console.log("uncaught exception occured");
   winston.error(exp.message, exp);
 });
+process.on("unhandledRejection", (exp) => {
+  console.log("got unhandled rejection");
+  winston.error(exp.message, exp);
+});
 
 winston.add(new winston.transports.File({ filename: "logfile.log" }));
 winston.add(

@@ -29,7 +29,7 @@ winston.add(
   })
 );
 
-throw new Error("something failed during startup");
+// throw new Error("something failed during startup");
 
 if (!config.get("jwtPrivateKey")) {
   console.error("FATAL jwtPrivateKey is not defined");

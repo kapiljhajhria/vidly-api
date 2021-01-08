@@ -30,6 +30,8 @@ winston.add(
 );
 
 // throw new Error("something failed during startup");
+const p = Promise.reject(new Error("promise failed , not handled"));
+p.then(() => console.log("p done"));
 
 if (!config.get("jwtPrivateKey")) {
   console.error("FATAL jwtPrivateKey is not defined");

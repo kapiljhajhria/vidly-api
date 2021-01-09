@@ -6,15 +6,10 @@ const mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
-const genres = require("./routes/genres");
-const customers = require("./routes/customers");
-const movies = require("./routes/movies");
-const rentals = require("./routes/rentals");
-const users = require("./routes/users");
-const auth = require("./routes/auth");
 const express = require("express");
-const error = require("./middleware/error");
+
 const app = express();
+require("./startup/routes")(app);
 
 winston.exceptions.handle(
   new winston.transports.File({ filename: "exceptionsHandler.log" })
@@ -36,10 +31,6 @@ winston.add(
   })
 );
 
-// throw new Error("something failed during startup");
-// const p = Promise.reject(new Error("promise failed , not handled"));
-// p.then(() => console.log("p done"));
-
 if (!config.get("jwtPrivateKey")) {
   console.error("FATAL jwtPrivateKey is not defined");
   process.exit(1);
@@ -55,15 +46,6 @@ mongoose
   .catch((error) =>
     console.log("got error connecting to database vidly: " + error)
   );
-
-app.use(express.json());
-app.use("/api/genres", genres);
-app.use("/api/customers", customers);
-app.use("/api/movies", movies);
-app.use("/api/rentals", rentals);
-app.use("/api/users", users);
-app.use("/api/auth", auth);
-app.use(error);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}...`));

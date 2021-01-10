@@ -1,7 +1,7 @@
 let server;
 const request = require("supertest");
 const { Genre } = require("../../models/genre");
-const { USer, User } = require("../../models/user");
+const { User } = require("../../models/user");
 
 describe("/api/genres", () => {
   //call this before each test

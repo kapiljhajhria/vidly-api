@@ -1,18 +1,43 @@
 //POST /api/returns {customerIs,movieId}
+const moment = require("moment");
 const request = require("supertest");
-const { Genre } = require("../../models/genre");
+const { User } = require("../../models/user");
 const { Rental } = require("../../models/rental");
 const mongoose = require("mongoose");
+const { Movie } = require("../../models/movie");
 
 let server;
 
 //return 401 if client is not logged in
 describe("/api/returns", () => {
-  let customerId = mongoose.Types.ObjectId();
-  let movieId = mongoose.Types.ObjectId();
+  let customerId;
+  let movieId;
   let rental;
+  let token;
+  let movie;
+
+  const exec = () => {
+    return request(server)
+      .post("/api/returns")
+      .set("x-auth-token", token)
+      .send({ customerId, movieId });
+  };
+
   beforeEach(async () => {
     server = require("../../index");
+
+    customerId = mongoose.Types.ObjectId();
+    movieId = mongoose.Types.ObjectId();
+    token = new User().generateAuthToken();
+
+    movie = new Movie({
+      _id: movieId,
+      title: "12345",
+      dailyRentalRate: 2,
+      genre: { name: "12345" },
+      numberInStock: 10,
+    });
+    await movie.save();
     rental = new Rental({
       customer: {
         _id: customerId,
@@ -25,11 +50,12 @@ describe("/api/returns", () => {
         dailyRentalRate: 2,
       },
     });
+
     await rental.save();
   });
 
   afterEach(async () => {
-    server.close();
+    await server.close();
     await Rental.remove({});
   });
 
@@ -39,28 +65,93 @@ describe("/api/returns", () => {
   });
 
   it("return 401 if not logged in", async () => {
-    const res = await request(server)
-      .post("/api/returns")
-      .setEncoding({ customerId, movieId });
+    token = "";
+    const res = await exec();
 
     expect(res.status).toBe(401);
   });
+
+  it("return 400 if customer id not provided", async () => {
+    customerId = null;
+    const res = await exec();
+    expect(res.status).toBe(400);
+  });
+
+  it("return 400 if movie id not provided", async () => {
+    movieId = null;
+    const res = await exec();
+
+    expect(res.status).toBe(400);
+  });
+
+  it("return 404 if no rental found for customer movie combination", async () => {
+    await Rental.remove();
+    const res = await exec();
+
+    expect(res.status).toBe(404);
+  });
+
+  it("return 400 if return already processed", async () => {
+    rental.dateReturned = new Date();
+    await rental.save();
+    const res = await exec();
+
+    expect(res.status).toBe(400);
+  });
+
+  it("return 200 if its a valid request", async () => {
+    const res = await exec();
+
+    expect(res.status).toBe(200);
+  });
+
+  it("should set a return date if input is valid", async () => {
+    const res = await exec();
+    const rentalInDb = await Rental.findById(rental._id);
+    const diff = new Date() - rentalInDb.dateReturned;
+    expect(res.status).toBe(200);
+    expect(rentalInDb.dateReturned).toBeDefined();
+    expect(diff).toBeLessThan(10 * 1000);
+  });
+
+  it("should set rental fees if input is valid", async () => {
+    rental.dateOut = moment().add(-7, "days").toDate();
+    await rental.save();
+    const res = await exec();
+    const rentalInDb = await Rental.findById(rental._id);
+    const diff = new Date() - rentalInDb.dateReturned;
+    expect(res.status).toBe(200);
+    expect(rentalInDb.rentalFee).toBe(14);
+  });
+
+  it("should increase the movie stock input is valid", async () => {
+    const res = await exec();
+
+    const movieInDb = await Movie.findById(movieId);
+    expect(res.status).toBe(200);
+    expect(movieInDb.numberInStock).toBe(movie.numberInStock + 1);
+  });
+
+  it("reutn rental in body of response, if input is valid", async () => {
+    const res = await exec();
+
+    expect(res.status).toBe(200);
+    const rentalInDb = await Rental.findById(rental._id);
+    //expect(res.body).toMatchObject(rentalInDb);// doens't match because we get dat as obj from database
+    //and req body is all strings
+    // expect(res.body).toHaveProperty("dateOut");
+    // expect(res.body).toHaveProperty("dateReturned");
+    // expect(res.body).toHaveProperty("rentalFee");
+    // expect(res.body).toHaveProperty("customer");
+    // expect(res.body).toHaveProperty("movie");
+    expect(Object.keys(res.body)).toEqual(
+      expect.arrayContaining([
+        "dateOut",
+        "dateReturned",
+        "rentalFee",
+        "customer",
+        "movie",
+      ])
+    );
+  });
 });
-
-//check if customerId is provided, return 400 if not provided
-
-//check if movieId is provided, return 400 if not provided
-
-//return 404 if no rental found for this customer and movie
-
-//return 400 if rental already processed
-
-//return 200 if valid request
-
-//set return date
-
-//caculate rental fees
-
-//increase the stock
-
-//return rental object

@@ -1,1 +1,6 @@
-{ "jwtPrivateKey": "vidly_jwtPrivateKeyDef", "db": "mongodb://localhost/vidly" }
+{
+  "jwtPrivateKey": "vidly_jwtPrivateKeyDef",
+  "db": "mongodb://localhost/vidly",
+  "port": "3900",
+  "requiresAuth": false
+}
